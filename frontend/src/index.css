@@ -55,7 +55,7 @@ body {
   align-items: center;
   justify-content: center;
 }
-/* CSS cho Book Card từ Index.cshtml */
+/* CSS cho Book Card */
 .book-card {
   border: none;
   transition: transform 0.3s;
