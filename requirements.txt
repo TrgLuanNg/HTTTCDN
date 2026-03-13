@@ -1,0 +1,5 @@
+backend chạy pip install fastapi uvicorn sqlalchemy psycopg2-binary pydantic "passlib[bcrypt]" "python-jose[cryptography]" python-multipart fastapi-mail email-validator
+frontend chạy npm install react-router-dom axios
+
+python -m uvicorn app.main:app --reload
+npm run dev
