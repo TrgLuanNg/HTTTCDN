@@ -16,6 +16,7 @@ export default function StorefrontHome() {
 
   // Đây là hàm xử lý sự kiện (Event Handler)
   const addToCart = (book) => {
+    console.log("2. Component Cha (StoreFront): Nhận được tín hiệu từ con, đang xử lý sách:", book.name);
     let cart = JSON.parse(localStorage.getItem("BOOK_CART")) || [];
     let item = cart.find(x => x.id === book.id);
     

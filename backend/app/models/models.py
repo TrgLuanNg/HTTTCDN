@@ -79,6 +79,7 @@ class User(Base):
     address = Column(Text)
     avatar_image = Column(Text)
     phone_number = Column(String(20))
+    gender = Column(String(10))
 
 class Bill(Base):
     __tablename__ = "bill"

@@ -21,10 +21,11 @@ class AuthorResponse(BaseModel):
 # 2. SCHEMAS CHO USER (Tài khoản)
 # ==========================================
 class UserBase(BaseModel):
-    email: EmailStr # Tự động validate chuẩn email có @
+    email: EmailStr
     fullname: Optional[str] = None
     address: Optional[str] = None
     phone_number: Optional[str] = None
+    gender: Optional[str] = None # Thêm dòng này
 
 # Schema dùng khi Khách hàng Đăng ký (Cần password)
 class UserCreate(UserBase):

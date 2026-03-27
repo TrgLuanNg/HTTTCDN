@@ -17,7 +17,10 @@ export default function BookCard({ book, onAddToCart }) {
                 {/* Nút bấm để gọi Event */}
                 <button 
                     className="btn btn-outline-dark btn-sm rounded-pill px-3"
-                    onClick={() => onAddToCart(book)}
+                    onClick={() => {
+                      console.log("1. Component Con (BookCard): Nút đã được bấm, đang gọi hàm onAddToCart...");
+                      onAddToCart(book);
+                    }}
                 >
                     <i className="fas fa-cart-plus"></i>
                 </button>
