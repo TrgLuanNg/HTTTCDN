@@ -1,7 +1,9 @@
+// File: src/pages/storefront/StoreFrontHome.jsx
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom'; // Không cần Link ở đây nữa vì đã chuyển sang BookCard
 import axiosClient from '../../api/axiosClient';
-import Navbar from '../../components/Navbar';
+import Navbar from '../../components/Navbar.jsx';
+import BookCard from '../../components/Bookcard.jsx'; // Nhúng User Control vừa tạo
 
 export default function StorefrontHome() {
   const [books, setBooks] = useState([]);
@@ -13,6 +15,7 @@ export default function StorefrontHome() {
       .catch(error => console.error(error));
   }, []);
 
+  // Đây là hàm xử lý sự kiện (Event Handler)
   const addToCart = (book) => {
     let cart = JSON.parse(localStorage.getItem("BOOK_CART")) || [];
     let item = cart.find(x => x.id === book.id);
@@ -35,9 +38,8 @@ export default function StorefrontHome() {
     }
     
     localStorage.setItem("BOOK_CART", JSON.stringify(cart));
-    window.dispatchEvent(new Event('cartUpdated')); // Kích hoạt update Navbar
+    window.dispatchEvent(new Event('cartUpdated'));
 
-    // Hiện Toast thông báo
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 2000);
   };
@@ -53,26 +55,15 @@ export default function StorefrontHome() {
 
         <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
           {books.map(item => (
-            <div className="col" key={item.id}>
-              <div className="book-card position-relative">
-                <Link to={`/book/${item.id}`} className="book-img-container">
-                    <img src={item.image || 'https://via.placeholder.com/200x300'} className="book-img" alt={item.name} />
-                    <div className="overlay"></div>
-                </Link>
-                <div className="card-body">
-                    <Link to={`/book/${item.id}`} className="book-title">{item.name}</Link>
-                    <div className="d-flex justify-content-between align-items-end mt-3">
-                        <span className="book-price">${item.price}</span>
-                        <button 
-                            className="btn btn-outline-dark btn-sm rounded-pill px-3"
-                            onClick={() => addToCart(item)}
-                        >
-                            <i className="fas fa-cart-plus"></i>
-                        </button>
-                    </div>
-                </div>
-              </div>
-            </div>
+            /* Sử dụng User Control ở đây!
+              - Truyền Property: book={item}
+              - Gắn Event Delegate: onAddToCart={addToCart}
+            */
+            <BookCard 
+                key={item.id} 
+                book={item} 
+                onAddToCart={addToCart} 
+            />
           ))}
         </div>
       </div>

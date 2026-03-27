@@ -2,8 +2,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Thay đổi thông tin đăng nhập PostgreSQL của bạn vào đây
-SQLALCHEMY_DATABASE_URL = "postgresql://bookstore_admin:matkhau_cua_ban_123@localhost:5432/bookstore_db"
+# Nhớ thay chữ 'postgres' và 'matkhau_cua_ban' bằng user và password pgAdmin của máy bạn nhé
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:dgnchitg@localhost/bookstore_htttdn"
 
 # Khởi tạo Engine kết nối
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
