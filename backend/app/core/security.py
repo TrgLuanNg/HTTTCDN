@@ -8,9 +8,6 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.models import User
 
-# ==========================================
-# 1. CẤU HÌNH BẢO MẬT & TOKEN
-# ==========================================
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = "chuoi_bi_mat_cua_ban_khong_cho_ai_biet"
 ALGORITHM = "HS256"
@@ -19,9 +16,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 # Khai báo cấu trúc OAuth2 (Phải nằm ở đây để hàm bên dưới nhận diện được)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-# ==========================================
-# 2. CÁC HÀM XỬ LÝ MẬT KHẨU & TOKEN
-# ==========================================
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -34,9 +28,6 @@ def create_access_token(data: dict) -> str:
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# ==========================================
-# 3. DEPENDENCY BẢO VỆ API (Bắt buộc đăng nhập)
-# ==========================================
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1,6 +1,5 @@
 // File: src/pages/storefront/StoreFrontHome.jsx
 import { useState, useEffect } from 'react';
-// import { Link } from 'react-router-dom'; // Không cần Link ở đây nữa vì đã chuyển sang BookCard
 import axiosClient from '../../api/axiosClient';
 import Navbar from '../../components/Navbar.jsx';
 import BookCard from '../../components/Bookcard.jsx'; // Nhúng User Control vừa tạo
