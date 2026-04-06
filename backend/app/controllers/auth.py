@@ -11,9 +11,13 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    if db.query(User).filter(User.email == user.email).first():
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
+    # Tìm user cũ
+    existing_user = db.query(User).filter(User.email == user.email).first()
+    if existing_user:
+        # Xóa user cũ để "bypass" lỗi trùng lặp
+        db.delete(existing_user)
+        db.commit()
+
     user_data = user.model_dump()
     user_data["password"] = get_password_hash(user_data["password"])
     

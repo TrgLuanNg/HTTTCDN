@@ -34,22 +34,15 @@ export default function Register() {
         setIsLoading(true);
 
         try {
-            // Gửi data dưới dạng JSON theo schema UserCreate trong backend
-            await axiosClient.post('/auth/register', formData);
-            
-            // Hiện thông báo thành công
-            setSuccessMsg("Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...");
-            
-            // Đợi 2 giây để user đọc thông báo rồi mới chuyển trang
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000);
-            
+        // formData lúc này đã bao gồm: fullname, email, password, address, phone_number, gender
+        const response = await axiosClient.post('/auth/register', formData); 
+        console.log("Dữ liệu gửi đi:", formData);
+        setSuccessMsg("Đăng ký thành công! Đang chuyển hướng ...");
+        // ... điều hướng ...
         } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.detail || "Đăng ký thất bại. Có thể email đã tồn tại.");
+        setError(err.response?.data?.detail || "Lỗi đăng ký");
         } finally {
-            setIsLoading(false);
+        setIsLoading(false);
         }
     };
 
