@@ -69,8 +69,13 @@ class Product(Base):
     categories = relationship("Category", secondary=product_categories, back_populates="products")
     authors = relationship("Author", secondary=product_authors, back_populates="products")
 
+class Role(Base):
+    __tablename__ = "role"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(50), unique=True, nullable=False)
+
 class User(Base):
-    __tablename__ = "user" # Lưu ý: Tên bảng trong SQL là "user"
+    __tablename__ = "user"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(150), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
@@ -80,6 +85,7 @@ class User(Base):
     avatar_image = Column(Text)
     phone_number = Column(String(20))
     gender = Column(String(10))
+    role = relationship("Role")
 
 class Bill(Base):
     __tablename__ = "bill"
@@ -93,7 +99,6 @@ class Bill(Base):
     phone_number = Column(String(20))
     payment_method = Column(String(50))
     
-    # Quan hệ 1-n với BillDetail
     details = relationship("BillDetail", back_populates="bill")
 
 class BillDetail(Base):

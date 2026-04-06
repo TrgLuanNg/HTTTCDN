@@ -1,2 +1,11 @@
-pip install fastapi uvicorn sqlalchemy psycopg2-binary pydantic "passlib[bcrypt]" "python-jose[cryptography]" python-multipart fastapi-mail email-validator
-npm install react-router-dom axios
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+pydantic
+passlib
+bcrypt==3.2.2
+python-jose[cryptography]
+python-multipart
+fastapi-mail
+email-validator

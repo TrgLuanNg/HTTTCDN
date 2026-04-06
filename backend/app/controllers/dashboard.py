@@ -14,7 +14,7 @@ from app.schemas.schemas import (
 from app.core.security import get_password_hash
 from app.schemas import schemas
 
-router = APIRouter(prefix="/admin", tags=["Dashboard"])
+router = APIRouter(prefix="/api/admin", tags=["Dashboard"])
 
 # ==========================================
 # 1. API THỐNG KÊ (Cho trang chủ Admin)
@@ -135,3 +135,16 @@ def get_all_authors(db: Session = Depends(get_db)):
 def get_orders(db: Session = Depends(get_db)):
     # joinedload giúp lấy luôn cả bảng bill_detail trong 1 lần gọi API
     return db.query(Bill).options(joinedload(Bill.details)).all()
+
+@router.delete("/orders/{order_id}")
+def delete_order(order_id: UUID, db: Session = Depends(get_db)):
+    order = db.query(Bill).filter(Bill.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Đơn hàng không tồn tại")
+    
+    # Xóa chi tiết đơn hàng trước (nếu database chưa đặt ON DELETE CASCADE)
+    db.query(BillDetail).filter(BillDetail.bill_id == order_id).delete()
+    
+    db.delete(order)
+    db.commit()
+    return {"message": "Đã xóa đơn hàng thành công"}

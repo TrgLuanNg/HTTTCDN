@@ -7,35 +7,57 @@ export default function AdminUsers() {
     const [search, setSearch] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [deleteTarget, setDeleteTarget] = useState(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newUser, setNewUser] = useState({ fullname: '', email: '', password: '', role: 'user' });
+
+    const HEADERS = { 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+    };
 
     useEffect(() => {
-        fetch('http://localhost:8000/api/admin/users', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
+        fetch('http://localhost:8000/api/admin/users', { headers: HEADERS })
             .then(r => r.json())
-            .then(data => { setUsers(data); setLoading(false); })
+            .then(data => { setUsers(Array.isArray(data) ? data : []); setLoading(false); })
             .catch(() => setLoading(false));
     }, []);
 
     const filtered = users.filter(u =>
-        u.fullname?.toLowerCase().includes(search.toLowerCase()) ||
-        u.email?.toLowerCase().includes(search.toLowerCase()) ||
-        u.phone_number?.includes(search)
+        String(u.fullname || '').toLowerCase().includes(search.toLowerCase()) ||
+        String(u.email || '').toLowerCase().includes(search.toLowerCase()) ||
+        String(u.phone_number || '').includes(search) 
     );
 
-    const handleDelete = async () => {
-        if (!deleteTarget) return;
-        try {
-            await fetch(`http://localhost:8000/api/admin/users/${deleteTarget.id}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-            });
-            setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
-        } catch (e) {
-            alert('Xóa thất bại!');
-        }
-        setDeleteTarget(null);
-    };
+    const handleAddUser = async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch('http://localhost:8000/api/admin/users', {
+                    method: 'POST',
+                    headers: HEADERS,
+                    body: JSON.stringify(newUser)
+                });
+                if (res.ok) {
+                    const added = await res.json();
+                    setUsers([...users, added]);
+                    setShowAddModal(false);
+                    setNewUser({ fullname: '', email: '', password: '', role: 'user' });
+                } else {
+                    alert("Lỗi khi thêm người dùng");
+                }
+            } catch (err) { alert("Không thể kết nối server"); }
+        };
+
+        const handleDelete = async () => {
+            if (!deleteTarget) return;
+            try {
+                await fetch(`http://localhost:8000/api/admin/users/${deleteTarget.id}`, {
+                    method: 'DELETE',
+                    headers: HEADERS,
+                });
+                setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+            } catch (e) { alert('Xóa thất bại!'); }
+            setDeleteTarget(null);
+        };
 
     const getInitials = (name) => {
         if (!name) return '?';
@@ -65,7 +87,12 @@ export default function AdminUsers() {
 
                 {/* Main */}
                 <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4" style={{ marginLeft: '16.666667%' }}>
-                    <h2 className="mb-4">Quản lý Người dùng</h2>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Quản lý Người dùng</h2>
+                    <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+                        <i className="fas fa-user-plus me-2"></i>Thêm người dùng
+                    </button>
+                </div>
 
                     {/* Stats */}
                     <div className="row g-3 mb-4">
@@ -158,7 +185,44 @@ export default function AdminUsers() {
                     </div>
                 </main>
             </div>
-
+            {/* Modal Thêm người dùng */}
+            {showAddModal && (
+                <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog">
+                        <form className="modal-content" onSubmit={handleAddUser}>
+                            <div className="modal-header">
+                                <h5 className="modal-title">Thêm người dùng mới</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="mb-3">
+                                    <label className="form-label">Họ tên</label>
+                                    <input className="form-control" required value={newUser.fullname} onChange={e => setNewUser({...newUser, fullname: e.target.value})} />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Email</label>
+                                    <input type="email" className="form-control" required value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Mật khẩu</label>
+                                    <input type="password" title="Tối thiểu 6 ký tự" className="form-control" required value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Vai trò (Role)</label>
+                                    <select className="form-select" value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})}>
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Hủy</button>
+                                <button type="submit" className="btn btn-primary">Lưu người dùng</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}                        
             {/* Modal xem chi tiết */}
             {selectedUser && (
                 <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>

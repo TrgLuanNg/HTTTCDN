@@ -29,14 +29,22 @@ export default function AdminBooks() {
             fetch('http://localhost:8000/api/admin/categories', { headers: HEADERS }).then(r => r.json()),
             fetch('http://localhost:8000/api/admin/authors', { headers: HEADERS }).then(r => r.json()),
         ]).then(([b, p, c, a]) => {
-            setBooks(b); setPublishers(p); setCategories(c); setAuthors(a);
+            // Kiểm tra xem dữ liệu trả về có thực sự là mảng không, nếu không thì gán mảng rỗng []
+            setBooks(Array.isArray(b) ? b : []); 
+            setPublishers(Array.isArray(p) ? p : []); 
+            setCategories(Array.isArray(c) ? c : []); 
+            setAuthors(Array.isArray(a) ? a : []);
             setLoading(false);
-        }).catch(() => setLoading(false));
+        }).catch((err) => {
+            console.error("Fetch error:", err);
+            setBooks([]);
+            setLoading(false);
+        });
     }, []);
 
     const filtered = books.filter(b =>
-        b.name?.toLowerCase().includes(search.toLowerCase()) ||
-        b.publisher?.name?.toLowerCase().includes(search.toLowerCase())
+        String(b.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        String(b.publisher?.name || '').toLowerCase().includes(search.toLowerCase())
     );
 
     const openAdd = () => { setEditBook(null); setForm(EMPTY_FORM); setShowForm(true); };

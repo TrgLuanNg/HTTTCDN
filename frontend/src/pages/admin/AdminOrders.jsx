@@ -14,24 +14,50 @@ export default function AdminOrders() {
     const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     useEffect(() => {
         fetch('http://localhost:8000/api/admin/orders', {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
             .then(r => r.json())
-            .then(data => { setOrders(data); setLoading(false); })
-            .catch(() => setLoading(false));
+            .then(data => { 
+                setOrders(Array.isArray(data) ? data : []); 
+                setLoading(false); 
+            })
+            .catch(() => {
+                setOrders([]);
+                setLoading(false);
+            });
     }, []);
 
     const filtered = orders.filter(o => {
         const matchSearch =
-            o.fullname?.toLowerCase().includes(search.toLowerCase()) ||
-            o.id?.toString().includes(search) ||
-            o.phone_number?.includes(search);
+            String(o.fullname || '').toLowerCase().includes(search.toLowerCase()) ||
+            String(o.id || '').includes(search) ||  
+            String(o.phone_number || '').includes(search); 
+            
         const matchStatus = filterStatus === 'all' || o.status === filterStatus;
         return matchSearch && matchStatus;
     });
+
+    const handleDeleteOrder = async () => {
+        if (!deleteTarget) return;
+        try {
+            const res = await fetch(`http://localhost:8000/api/admin/orders/${deleteTarget.id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            });
+            if (res.ok) {
+                setOrders(prev => prev.filter(o => o.id !== deleteTarget.id));
+                setDeleteTarget(null);
+            } else {
+                alert('Xóa đơn hàng thất bại!');
+            }
+        } catch (e) { 
+            alert('Lỗi kết nối khi xóa đơn hàng!'); 
+        }
+    };
 
     const totalRevenue = orders
         .filter(o => o.status === 'completed')
@@ -142,8 +168,11 @@ export default function AdminOrders() {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <button className="btn btn-sm btn-outline-primary me-1" onClick={() => setSelectedOrder(order)}>
+                                                        <button className="btn btn-sm btn-outline-primary me-1" onClick={() => setSelectedOrder(order)} title="Xem chi tiết">
                                                             <i className="fas fa-eye"></i>
+                                                        </button>
+                                                        <button className="btn btn-sm btn-outline-danger" onClick={() => setDeleteTarget(order)} title="Xóa đơn hàng">
+                                                            <i className="fas fa-trash"></i>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -199,6 +228,29 @@ export default function AdminOrders() {
                             </div>
                             <div className="modal-footer">
                                 <button className="btn btn-secondary" onClick={() => setSelectedOrder(null)}>Đóng</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal xác nhận xóa */}
+            {deleteTarget && (
+                <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title text-danger">Xác nhận xóa đơn hàng</h5>
+                                <button className="btn-close" onClick={() => setDeleteTarget(null)}></button>
+                            </div>
+                            <div className="modal-body">
+                                Bạn có chắc chắn muốn xóa đơn hàng của khách hàng <strong>{deleteTarget.fullname}</strong>?
+                                <br/>
+                                Hành động này không thể hoàn tác!
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setDeleteTarget(null)}>Hủy</button>
+                                <button className="btn btn-danger" onClick={handleDeleteOrder}>Xóa vĩnh viễn</button>
                             </div>
                         </div>
                     </div>

@@ -21,7 +21,7 @@ class CheckoutRequest(BaseModel):
     phone_number: str
     items: List[CartItem]
 
-router = APIRouter(prefix="/store", tags=["Storefront"])
+router = APIRouter(prefix="/api/store", tags=["Storefront"])
 
 @router.get("/books", response_model=List[ProductResponse])
 def get_books(search: str = None, db: Session = Depends(get_db)):
