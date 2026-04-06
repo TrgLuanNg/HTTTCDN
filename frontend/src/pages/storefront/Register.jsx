@@ -34,15 +34,16 @@ export default function Register() {
         setIsLoading(true);
 
         try {
-        // formData lúc này đã bao gồm: fullname, email, password, address, phone_number, gender
-        const response = await axiosClient.post('/auth/register', formData); 
-        console.log("Dữ liệu gửi đi:", formData);
-        setSuccessMsg("Đăng ký thành công! Đang chuyển hướng ...");
-        // ... điều hướng ...
+            const response = await axiosClient.post('/auth/register', formData);
+            setSuccessMsg("Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...");
+            // Chỉ chuyển hướng khi thực sự thành công
+            setTimeout(() => navigate('/login'), 2000);
         } catch (err) {
-        setError(err.response?.data?.detail || "Lỗi đăng ký");
+            // Hiển thị lỗi thực tế từ Backend (ví dụ: "Email already registered")
+            const msg = err.response?.data?.detail || "Đăng ký thất bại. Vui lòng thử lại.";
+            setError(msg === "Email already registered" ? "Email này đã được đăng ký!" : msg);
         } finally {
-        setIsLoading(false);
+            setIsLoading(false);
         }
     };
 

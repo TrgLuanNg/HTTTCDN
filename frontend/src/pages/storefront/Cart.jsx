@@ -182,6 +182,12 @@ export default function Cart() {
                 >
                   {isProcessing ? "Đang xử lý..." : "Xác nhận đặt hàng"}
                 </button>
+                <div className="mt-4 p-3 bg-light rounded text-center">
+                  <p className="mb-2 text-muted small">Đăng nhập để lưu đơn hàng và nhận ưu đãi</p>
+                  <Link to="/login" className="btn btn-outline-dark btn-sm rounded-pill px-4">
+                    Đăng nhập ngay
+                  </Link>
+                </div>
               </form>
             </div>
           </div>

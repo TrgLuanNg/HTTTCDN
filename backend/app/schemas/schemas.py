@@ -1,68 +1,105 @@
-# backend/app/schemas/schemas.py
 from pydantic import BaseModel, EmailStr, ConfigDict
-from typing import List, Optional
 from uuid import UUID
+from typing import Optional, List
 from decimal import Decimal
+from datetime import datetime
 
 # ==========================================
-# 1. SCHEMAS CHO CATEGORY & AUTHOR (Dùng để hiển thị lồng ghép)
+# CATEGORY SCHEMAS
 # ==========================================
-class CategoryResponse(BaseModel):
+class CategoryBase(BaseModel):
+    name: str
+
+class CategoryResponse(CategoryBase):
     id: UUID
-    name: str
-    model_config = ConfigDict(from_attributes=True) # Giúp Pydantic đọc được dữ liệu từ SQLAlchemy
-
-class AuthorResponse(BaseModel):
-    author_id: UUID
-    name: str
     model_config = ConfigDict(from_attributes=True)
 
 # ==========================================
-# 2. SCHEMAS CHO USER (Tài khoản)
+# AUTHOR SCHEMAS
+# ==========================================
+class AuthorBase(BaseModel):
+    name: str
+
+class AuthorResponse(AuthorBase):
+    author_id: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+# ==========================================
+# PUBLISHER SCHEMAS
+# ==========================================
+class PublisherBase(BaseModel):
+    name: str
+
+class PublisherResponse(PublisherBase):
+    id: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+# ==========================================
+# USER SCHEMAS
 # ==========================================
 class UserBase(BaseModel):
     email: EmailStr
     fullname: Optional[str] = None
     address: Optional[str] = None
     phone_number: Optional[str] = None
-    gender: Optional[str] = None # Thêm dòng này
+    gender: Optional[str] = None
 
-# Schema dùng khi Khách hàng Đăng ký (Cần password)
 class UserCreate(UserBase):
     password: str
 
-# Schema dùng khi trả dữ liệu về cho Frontend (KHÔNG có password)
 class UserResponse(UserBase):
     id: UUID
-    role_id: Optional[UUID] = None
     avatar_image: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 # ==========================================
-# 3. SCHEMAS CHO PRODUCT (Sách)
+# PRODUCT (BOOK) SCHEMAS
 # ==========================================
 class ProductBase(BaseModel):
     name: str
     price: Decimal
-    discount: Optional[Decimal] = 0
-    quantity: Optional[int] = 0
+    quantity: int
     publisher_year: Optional[int] = None
-
-# Schema dùng khi Admin thêm sách mới
-class ProductCreate(ProductBase):
-    publisher_id: UUID
-    category_ids: List[UUID] = [] # Nhận một mảng ID các thể loại
-    author_ids: List[UUID] = []   # Nhận một mảng ID các tác giả
     image: Optional[str] = None
+    publisher_id: Optional[UUID] = None
 
-# Schema dùng khi trả dữ liệu sách về cho Frontend (Có kèm chi tiết Thể loại và Tác giả)
+class ProductCreate(ProductBase):
+    category_ids: Optional[List[UUID]] = []
+    author_ids: Optional[List[UUID]] = []
+
 class ProductResponse(ProductBase):
     id: UUID
-    publisher_id: Optional[UUID] = None
-    image: Optional[str] = None
-    
-    # Hiển thị luôn danh sách thể loại và tác giả của cuốn sách đó
     categories: List[CategoryResponse] = []
     authors: List[AuthorResponse] = []
-    
+    publisher: Optional[PublisherResponse] = None
     model_config = ConfigDict(from_attributes=True)
+
+# ==========================================
+# BILL (ORDER) SCHEMAS
+# ==========================================
+class BillDetailResponse(BaseModel):
+    product_id: UUID
+    quantity: int
+    price: Decimal
+    model_config = ConfigDict(from_attributes=True)
+
+class BillResponse(BaseModel):
+    id: UUID
+    user_id: Optional[UUID] = None
+    date_create: datetime
+    total_price: Decimal
+    fullname: str
+    address: str
+    phone_number: str
+    payment_method: str
+    details: List[BillDetailResponse] = []
+    model_config = ConfigDict(from_attributes=True)
+
+# ==========================================
+# DASHBOARD SCHEMAS
+# ==========================================
+class DashboardStats(BaseModel):
+    total_products: int
+    total_users: int
+    total_orders: int
+    total_revenue: float

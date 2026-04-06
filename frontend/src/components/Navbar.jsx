@@ -28,8 +28,16 @@ export default function Navbar() {
             </Link>
             <div className="navbar-collapse collapse d-sm-inline-flex justify-content-between">
               <ul className="navbar-nav flex-grow-1">
+                <li className="nav-item ms-lg-3">
+                    <Link 
+                        className="btn btn-danger rounded-pill px-4 fw-bold" 
+                        to="/login"
+                        style={{ fontSize: '0.9rem' }}
+                    >
+                        <i className="fas fa-user me-2"></i> Đăng Nhập
+                    </Link>
+                </li>
                 <li className="nav-item"><Link className="nav-link" to="/">Sách Mới</Link></li>
-                <li className="nav-item"><Link className="nav-link" to="/authors">Tác Giả</Link></li>
                 <li className="nav-item"><Link className="nav-link" to="/about">Về Chúng Tôi</Link></li>
               </ul>
               <div className="d-flex align-items-center">
