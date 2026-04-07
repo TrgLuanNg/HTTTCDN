@@ -83,7 +83,7 @@ export default function Cart() {
         const response = await axiosClient.post('/store/checkout', orderPayload);
         
         if (response.data) {
-            alert("🎉 Đặt hàng thành công! Hóa đơn đã được gửi qua email của bạn.");
+            alert("Đặt hàng thành công! Hóa đơn đã được gửi qua email của bạn.");
             setCart([]); // Xóa giỏ hàng
             navigate('/'); // Quay về trang chủ
         }
