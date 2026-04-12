@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import AdminSidebar from '../../components/AdminSidebar';
 
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
@@ -70,20 +71,7 @@ export default function AdminUsers() {
     return (
         <div className="container-fluid">
             <div className="row">
-                {/* Sidebar */}
-                <div className="col-md-3 col-lg-2 d-md-block bg-dark sidebar vh-100 p-0 position-fixed">
-                    <div className="p-4 text-white border-bottom border-secondary">
-                        <h4 className="m-0">TheLibrary <span className="badge bg-danger small" style={{ fontSize: '0.5em' }}>ADMIN</span></h4>
-                    </div>
-                    <div className="nav flex-column p-3">
-                        <Link className="nav-link text-white-50 mb-2" to="/admin"><i className="fas fa-chart-line me-2"></i> Thống kê</Link>
-                        <Link className="nav-link text-white-50 mb-2" to="/admin/books"><i className="fas fa-book me-2"></i> Quản lý Sách</Link>
-                        <Link className="nav-link text-white active mb-2" to="/admin/users"><i className="fas fa-users me-2"></i> Người dùng</Link>
-                        <Link className="nav-link text-white-50 mb-2" to="/admin/orders"><i className="fas fa-shopping-cart me-2"></i> Đơn hàng</Link>
-                        <hr className="text-secondary" />
-                        <Link className="nav-link text-warning fw-bold" to="/"><i className="fas fa-arrow-left me-2"></i> Về Website</Link>
-                    </div>
-                </div>
+                <AdminSidebar />
 
                 {/* Main */}
                 <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4" style={{ marginLeft: '16.666667%' }}>
