@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List  
+from datetime import datetime   
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 from app.core.database import get_db
-from app.models.models import Product, User, Category, Author, Publisher, Bill
+from app.models.models import Product, User, Category, Author, Publisher, Bill, Role, StaffSchedule, SalaryPayment
 from app.schemas.schemas import (
     ProductCreate, ProductResponse, 
     UserCreate, UserResponse,
@@ -148,3 +150,30 @@ def delete_order(order_id: UUID, db: Session = Depends(get_db)):
     db.delete(order)
     db.commit()
     return {"message": "Đã xóa đơn hàng thành công"}
+
+@router.get("/staff")
+def get_all_staff(db: Session = Depends(get_db)):
+    # Lấy những user có role là 'staff'
+    staff_role = db.query(Role).filter(Role.name == "staff").first()
+    return db.query(User).filter(User.role_id == staff_role.id).all()
+
+@router.get("/staff/{staff_id}/schedule")
+def get_staff_schedule(staff_id: UUID, db: Session = Depends(get_db)):
+    return db.query(StaffSchedule).filter(StaffSchedule.user_id == staff_id).all()
+
+@router.post("/staff/{staff_id}/schedule")
+def update_staff_schedule(staff_id: UUID, schedule_data: List[dict], db: Session = Depends(get_db)):
+    # Xóa lịch cũ và ghi đè lịch mới
+    db.query(StaffSchedule).filter(StaffSchedule.user_id == staff_id).delete()
+    for item in schedule_data:
+        new_shift = StaffSchedule(user_id=staff_id, day_of_week=item['day'], shift_type=item['shift'])
+        db.add(new_shift)
+    db.commit()
+    return {"message": "Cập nhật lịch thành công"}
+
+@router.post("/staff/{staff_id}/pay")
+def pay_salary(staff_id: UUID, amount: float, db: Session = Depends(get_db)):
+    new_payment = SalaryPayment(user_id=staff_id, amount=amount, month_year=datetime.now().strftime("%m-%Y"))
+    db.add(new_payment)
+    db.commit()
+    return {"message": "Xác nhận thanh toán lương thành công"}

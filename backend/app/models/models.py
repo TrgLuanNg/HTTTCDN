@@ -1,5 +1,6 @@
 # backend/app/models/models.py
 import uuid
+import datetime
 from sqlalchemy import Column, String, Integer, Numeric, ForeignKey, Text, Table
 from sqlalchemy.dialects.postgresql import UUID, TSVECTOR
 from sqlalchemy.orm import relationship
@@ -110,3 +111,19 @@ class BillDetail(Base):
 
     # Quan hệ ngược lại với Bill
     bill = relationship("Bill", back_populates="details")
+
+class StaffSchedule(Base):
+    __tablename__ = "staff_schedule"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"))
+    day_of_week = Column(String(20)) # T2 -> CN
+    shift_type = Column(String(20))   # Sáng, Chiều, Tối
+
+class SalaryPayment(Base):
+    __tablename__ = "salary_payments"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"))
+    amount = Column(Numeric(15, 2))
+    # Dùng datetime.datetime.utcnow nếu bạn import datetime
+    payment_date = Column(DateTime, default=datetime.datetime.utcnow) 
+    month_year = Column(String(7))

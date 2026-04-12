@@ -9,7 +9,7 @@ export default function StorefrontHome() {
   const [toastVisible, setToastVisible] = useState(false);
 
   useEffect(() => {
-    axiosClient.get('/store/books')
+    axiosClient.get('/api/store/books')
       .then(response => setBooks(response.data))
       .catch(error => console.error(error));
   }, []);

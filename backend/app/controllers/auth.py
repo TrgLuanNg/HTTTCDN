@@ -11,10 +11,8 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    # Tìm user cũ
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
-        # Xóa user cũ để "bypass" lỗi trùng lặp
         db.delete(existing_user)
         db.commit()
 
