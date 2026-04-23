@@ -109,8 +109,10 @@ def create_admin_user(user: UserCreate, current_user: User = Depends(get_admin_u
         raise HTTPException(status_code=400, detail="Email đã được sử dụng")
     
     user_data = user.model_dump()
-    # QUAN TRỌNG: Bảo mật mật khẩu trước khi lưu
     user_data["password"] = get_password_hash(user_data["password"])
+    
+    if not user_data.get("role_id"):
+        user_data["role_id"] = "11111111-2222-3333-4444-5555555555555"  # user role ID
     
     new_user = User(**user_data)
     db.add(new_user)

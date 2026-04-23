@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text
 from typing import List
 from uuid import UUID
 from pydantic import BaseModel
 
 from app.core.database import get_db
-from app.models.models import Bill, BillDetail, Product, User
-from app.schemas.schemas import ProductResponse
+from app.models.models import Bill, BillDetail, Product, User, Role
+from app.schemas.schemas import ProductResponse, BillResponse
 from app.core.security import get_current_user
 from app.services.email import send_order_confirmation
+from app.schemas import schemas
 
 # Schema nhận dữ liệu giỏ hàng từ Frontend
 class CartItem(BaseModel):
@@ -93,3 +94,10 @@ async def checkout(
     print(f"Order confirmed for {current_user.email}, Bill ID: {new_bill.id}")
 
     return {"message": "Checkout successful", "bill_id": new_bill.id}
+
+@router.get("/orders", response_model=List[schemas.BillResponse])
+def get_user_orders(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # joinedload giúp lấy luôn cả bảng bill_detail và product trong 1 lần gọi API
+    return db.query(Bill).filter(Bill.user_id == current_user.id).options(
+        joinedload(Bill.details).joinedload(BillDetail.product)
+    ).all()

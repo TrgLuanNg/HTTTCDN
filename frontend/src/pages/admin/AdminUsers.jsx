@@ -4,12 +4,13 @@ import AdminSidebar from '../../components/AdminSidebar';
 
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
+    const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [newUser, setNewUser] = useState({ fullname: '', email: '', password: '', role: 'user' });
+    const [newUser, setNewUser] = useState({ fullname: '', email: '', password: '', role_id: '' });
 
     const HEADERS = { 
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -17,10 +18,24 @@ export default function AdminUsers() {
     };
 
     useEffect(() => {
+        // Fetch users
         fetch('http://localhost:8000/api/admin/users', { headers: HEADERS })
             .then(r => r.json())
             .then(data => { setUsers(Array.isArray(data) ? data : []); setLoading(false); })
             .catch(() => setLoading(false));
+        
+        // Fetch roles
+        fetch('http://localhost:8000/api/admin/roles', { headers: HEADERS })
+            .then(r => r.json())
+            .then(data => { 
+                setRoles(Array.isArray(data) ? data : []); 
+                // Set default role to "user" role
+                const userRole = data.find(r => r.name === 'user');
+                if (userRole) {
+                    setNewUser(prev => ({ ...prev, role_id: userRole.id }));
+                }
+            })
+            .catch(() => {});
     }, []);
 
     const filtered = users.filter(u =>
@@ -41,7 +56,9 @@ export default function AdminUsers() {
                     const added = await res.json();
                     setUsers([...users, added]);
                     setShowAddModal(false);
-                    setNewUser({ fullname: '', email: '', password: '', role: 'user' });
+                    // Reset form with default role
+                    const userRole = roles.find(r => r.name === 'user');
+                    setNewUser({ fullname: '', email: '', password: '', role_id: userRole?.id || '' });
                 } else {
                     alert("Lỗi khi thêm người dùng");
                 }
@@ -197,9 +214,13 @@ export default function AdminUsers() {
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">Vai trò (Role)</label>
-                                    <select className="form-select" value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})}>
-                                        <option value="user">User</option>
-                                        <option value="admin">Admin</option>
+                                    <select className="form-select" value={newUser.role_id} onChange={e => setNewUser({...newUser, role_id: e.target.value})}>
+                                        <option value="">Chọn vai trò</option>
+                                        {roles.map(role => (
+                                            <option key={role.id} value={role.id}>
+                                                {role.name}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>

@@ -160,10 +160,10 @@ export default function BookDetail() {
             <div className="row mb-4">
               <div className="col-md-6">
                 <p className="mb-2">
-                  <strong>Tác giả:</strong> {book?.author || ''}
+                  <strong>Tác giả:</strong> {book?.author?.name || book?.author || ''}
                 </p>
                 <p className="mb-2">
-                  <strong>Nhà xuất bản:</strong> {book?.publisher || ''}
+                  <strong>Nhà xuất bản:</strong> {book?.publisher?.name || book?.publisher || ''}
                 </p>
                 <p className="mb-2">
                   <strong>Năm xuất bản:</strong> {book?.publisher_year || ''}
@@ -171,7 +171,7 @@ export default function BookDetail() {
               </div>
               <div className="col-md-6">
                 <p className="mb-2">
-                  <strong>Thể loại:</strong> {book?.category || ''}
+                  <strong>Thể loại:</strong> {book?.category?.name || book?.category || ''}
                 </p>
                 <p className="mb-2">
                   <strong>Số trang:</strong> {book?.pages || ''}

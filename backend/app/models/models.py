@@ -109,8 +109,9 @@ class BillDetail(Base):
     quantity = Column(Integer, nullable=False)
     price = Column(Numeric(10, 2), nullable=False)
 
-    # Quan hệ ngược lại với Bill
+    # Quan hệ ngược lại với Bill và Product
     bill = relationship("Bill", back_populates="details")
+    product = relationship("Product")
 
 class StaffSchedule(Base):
     __tablename__ = "staff_schedule"

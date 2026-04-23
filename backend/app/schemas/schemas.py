@@ -85,6 +85,7 @@ class ProductResponse(ProductBase):
 # BILL (ORDER) SCHEMAS
 # ==========================================
 class BillDetailResponse(BaseModel):
+    product: ProductResponse
     product_id: UUID
     quantity: int
     price: Decimal
@@ -94,10 +95,11 @@ class BillResponse(BaseModel):
     id: UUID
     user_id: Optional[UUID] = None
     date_create: datetime
-    total_price: Decimal
     fullname: str
-    address: str
+    email: Optional[str] = None
     phone_number: str
+    address: str
+    total_price: Decimal
     payment_method: Optional[str] = None
     details: List[BillDetailResponse] = []
     model_config = ConfigDict(from_attributes=True)

@@ -8,6 +8,8 @@ export default function Navbar() {
   const [userRole, setUserRole] = useState('');
   const [userName, setUserName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showOrdersDropdown, setShowOrdersDropdown] = useState(false);
+  const [userOrders, setUserOrders] = useState([]);
 
   // Kiểm tra trạng thái login
   useEffect(() => {
@@ -32,6 +34,23 @@ export default function Navbar() {
     };
   }, []);
 
+  // Fetch user orders khi user đăng nhập
+  useEffect(() => {
+    if (isLoggedIn) {
+      const token = localStorage.getItem('token');
+      fetch('http://localhost:8000/api/store/orders', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(r => r.json())
+      .then(data => { 
+        setUserOrders(Array.isArray(data) ? data.slice(0, 5) : []); // Hiển thị 5 đơn hàng gần nhất
+      })
+      .catch(() => setUserOrders([]));
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const updateCartBadge = () => {
@@ -125,6 +144,16 @@ export default function Navbar() {
                     <ul className="dropdown-menu dropdown-menu-end">
                       <li><span className="dropdown-item-text text-muted small">Role: {userRole}</span></li>
                       <li><hr className="dropdown-divider" /></li>
+                      {userRole === 'user' && (
+                        <li>
+                          <Link 
+                            to="/orders" 
+                            className="dropdown-item"
+                          >
+                            <i className="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                          </Link>
+                        </li>
+                      )}
                       <li>
                         <button className="dropdown-item" onClick={handleLogout}>
                           <i className="fas fa-sign-out-alt me-2"></i> Đăng xuất

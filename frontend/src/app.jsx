@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import StorefrontHome from './pages/storefront/StoreFrontHome';
 import SearchBooks from './pages/storefront/SearchBooks';
 import BookDetail from './pages/storefront/BookDetail';
+import OrderDetail from './pages/storefront/OrderDetail';
+import Orders from './pages/storefront/Orders';
 import Cart from './pages/storefront/Cart';
 import Login from './pages/storefront/Login';
 import Register from './pages/storefront/Register';
@@ -23,6 +25,8 @@ function App() {
         <Route path="/" element={<StorefrontHome />} />
         <Route path="/search" element={<SearchBooks />} />
         <Route path="/book/:bookId" element={<BookDetail />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:orderId" element={<OrderDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
