@@ -15,20 +15,51 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            // FastAPI OAuth2 yêu cầu định dạng x-www-form-urlencoded
             const params = new URLSearchParams();
             params.append('username', email);
             params.append('password', password);
 
-            const response = await axiosClient.post('/auth/login', params, {
+            const response = await axiosClient.post('/api/auth/login', params, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
             });
 
             if (response.data.access_token) {
                 // Lưu token vào localStorage
-                localStorage.setItem('access_token', response.data.access_token);
-                alert("Đăng nhập thành công!");
-                navigate('/'); // Chuyển hướng về trang chủ
+                localStorage.setItem('token', response.data.access_token);
+                
+                // Lấy thông tin user để biết role
+                try {
+                    const userResponse = await axiosClient.get('/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${response.data.access_token}` }
+                    });
+                    
+                    console.log('User response:', userResponse.data);
+                    
+                    // Lưu role vào localStorage
+                    if (userResponse.data.role && userResponse.data.role.name) {
+                        localStorage.setItem('role', userResponse.data.role.name);
+                        localStorage.setItem('user', JSON.stringify(userResponse.data));
+                    } else {
+                        console.error('Role not found in response:', userResponse.data);
+                        throw new Error('Không tìm thấy thông tin role');
+                    }
+                    
+                    alert("Đăng nhập thành công!");
+                    
+                    // Dispatch event để navbar cập nhật
+                    window.dispatchEvent(new Event('userLoggedIn'));
+                    
+                    // Chuyển hướng theo role
+                    if (userResponse.data.role.name === 'admin' || userResponse.data.role.name === 'staff') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/');
+                    }
+                } catch (userErr) {
+                    console.error('Lỗi lấy thông tin user:', userErr);
+                    alert("Đăng nhập thành công nhưng không lấy được thông tin user!");
+                    navigate('/');
+                }
             }
         } catch (err) {
             console.error(err);

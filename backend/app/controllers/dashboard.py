@@ -14,6 +14,7 @@ from app.schemas.schemas import (
     CategoryResponse, AuthorResponse, PublisherResponse
 )
 from app.core.security import get_password_hash
+from app.core.dependencies import get_admin_user, get_staff_or_admin_user
 from app.schemas import schemas
 
 router = APIRouter(prefix="/api/admin", tags=["Dashboard"])
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/api/admin", tags=["Dashboard"])
 # 1. API THỐNG KÊ (Cho trang chủ Admin)
 # ==========================================
 @router.get("/stats")
-def get_admin_stats(db: Session = Depends(get_db)):
+def get_admin_stats(current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     total_revenue = db.query(func.sum(Bill.total_price)).scalar() or 0
     return {
         "total_products": db.query(Product).count(),
@@ -36,11 +37,11 @@ def get_admin_stats(db: Session = Depends(get_db)):
 # ==========================================
 
 @router.get("/books", response_model=List[ProductResponse])
-def get_all_books(db: Session = Depends(get_db)):
+def get_all_books(current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     return db.query(Product).all()
 
 @router.post("/books", response_model=ProductResponse)
-def create_book(product_in: ProductCreate, db: Session = Depends(get_db)):
+def create_book(product_in: ProductCreate, current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     # 1. Tách các ID quan hệ ra khỏi dữ liệu chính
     data = product_in.model_dump(exclude={"category_ids", "author_ids"})
     new_product = Product(**data)
@@ -61,7 +62,7 @@ def create_book(product_in: ProductCreate, db: Session = Depends(get_db)):
     return new_product
 
 @router.put("/books/{book_id}", response_model=ProductResponse)
-def update_book(book_id: UUID, product_in: ProductCreate, db: Session = Depends(get_db)):
+def update_book(book_id: UUID, product_in: ProductCreate, current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     book = db.query(Product).filter(Product.id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Không tìm thấy sách")
@@ -85,7 +86,7 @@ def update_book(book_id: UUID, product_in: ProductCreate, db: Session = Depends(
     return book
 
 @router.delete("/books/{book_id}")
-def delete_book(book_id: UUID, db: Session = Depends(get_db)):
+def delete_book(book_id: UUID, current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     book = db.query(Product).filter(Product.id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Sách không tồn tại")
@@ -99,11 +100,11 @@ def delete_book(book_id: UUID, db: Session = Depends(get_db)):
 # ==========================================
 
 @router.get("/users", response_model=List[UserResponse])
-def get_all_users(db: Session = Depends(get_db)):
+def get_all_users(current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     return db.query(User).all()
 
 @router.post("/users", response_model=UserResponse)
-def create_admin_user(user: UserCreate, db: Session = Depends(get_db)):
+def create_admin_user(user: UserCreate, current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email đã được sử dụng")
     
@@ -122,24 +123,24 @@ def create_admin_user(user: UserCreate, db: Session = Depends(get_db)):
 # ==========================================
 
 @router.get("/publishers", response_model=List[PublisherResponse])
-def get_all_publishers(db: Session = Depends(get_db)):
+def get_all_publishers(current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     return db.query(Publisher).all()
 
 @router.get("/categories", response_model=List[CategoryResponse])
-def get_all_categories(db: Session = Depends(get_db)):
+def get_all_categories(current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     return db.query(Category).all()
 
 @router.get("/authors", response_model=List[AuthorResponse])
-def get_all_authors(db: Session = Depends(get_db)):
+def get_all_authors(current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     return db.query(Author).all()
 
 @router.get("/orders", response_model=List[schemas.BillResponse]) # Bạn cần tạo thêm BillResponse schema
-def get_orders(db: Session = Depends(get_db)):
+def get_orders(current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     # joinedload giúp lấy luôn cả bảng bill_detail trong 1 lần gọi API
     return db.query(Bill).options(joinedload(Bill.details)).all()
 
 @router.delete("/orders/{order_id}")
-def delete_order(order_id: UUID, db: Session = Depends(get_db)):
+def delete_order(order_id: UUID, current_user: User = Depends(get_staff_or_admin_user), db: Session = Depends(get_db)):
     order = db.query(Bill).filter(Bill.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Đơn hàng không tồn tại")
@@ -152,17 +153,17 @@ def delete_order(order_id: UUID, db: Session = Depends(get_db)):
     return {"message": "Đã xóa đơn hàng thành công"}
 
 @router.get("/staff")
-def get_all_staff(db: Session = Depends(get_db)):
+def get_all_staff(current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     # Lấy những user có role là 'staff'
     staff_role = db.query(Role).filter(Role.name == "staff").first()
     return db.query(User).filter(User.role_id == staff_role.id).all()
 
 @router.get("/staff/{staff_id}/schedule")
-def get_staff_schedule(staff_id: UUID, db: Session = Depends(get_db)):
+def get_staff_schedule(staff_id: UUID, current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     return db.query(StaffSchedule).filter(StaffSchedule.user_id == staff_id).all()
 
 @router.post("/staff/{staff_id}/schedule")
-def update_staff_schedule(staff_id: UUID, schedule_data: List[dict], db: Session = Depends(get_db)):
+def update_staff_schedule(staff_id: UUID, schedule_data: List[dict], current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     # Xóa lịch cũ và ghi đè lịch mới
     db.query(StaffSchedule).filter(StaffSchedule.user_id == staff_id).delete()
     for item in schedule_data:
@@ -172,7 +173,7 @@ def update_staff_schedule(staff_id: UUID, schedule_data: List[dict], db: Session
     return {"message": "Cập nhật lịch thành công"}
 
 @router.post("/staff/{staff_id}/pay")
-def pay_salary(staff_id: UUID, amount: float, db: Session = Depends(get_db)):
+def pay_salary(staff_id: UUID, amount: float, current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     new_payment = SalaryPayment(user_id=staff_id, amount=amount, month_year=datetime.now().strftime("%m-%Y"))
     db.add(new_payment)
     db.commit()

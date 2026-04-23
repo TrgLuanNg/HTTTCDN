@@ -70,7 +70,8 @@ async def checkout(
         total_price=total_price,
         address=request.address,
         fullname=current_user.fullname,
-        phone_number=request.phone_number
+        phone_number=request.phone_number,
+        payment_method="COD"  # Default payment method
     )
     
     db.add(new_bill)
@@ -84,10 +85,11 @@ async def checkout(
     db.refresh(new_bill)
 
     # Gọi hàm gửi mail bất đồng bộ
-    await send_order_confirmation(
-        email_to=current_user.email, 
-        bill_id=str(new_bill.id), 
-        total_price=float(new_bill.total_price)
-    )
+    # await send_order_confirmation(
+    #     email_to=current_user.email, 
+    #     bill_id=str(new_bill.id), 
+    #     total_price=float(new_bill.total_price)
+    # )
+    print(f"Order confirmed for {current_user.email}, Bill ID: {new_bill.id}")
 
     return {"message": "Checkout successful", "bill_id": new_bill.id}

@@ -9,6 +9,9 @@ export default function Cart() {
     return JSON.parse(localStorage.getItem("BOOK_CART")) || [];
   });
 
+  // State kiểm tra login
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   // State cho form thông tin giao hàng
   const [formData, setFormData] = useState({
     fullName: '',
@@ -21,6 +24,25 @@ export default function Cart() {
 
   // Tính tổng tiền mỗi khi giỏ hàng thay đổi
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  // Kiểm tra trạng thái login
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+
+    checkLoginStatus();
+    window.addEventListener('storage', checkLoginStatus);
+    window.addEventListener('userLoggedIn', checkLoginStatus);
+    window.addEventListener('userLoggedOut', checkLoginStatus);
+    
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+      window.removeEventListener('userLoggedIn', checkLoginStatus);
+      window.removeEventListener('userLoggedOut', checkLoginStatus);
+    };
+  }, []);
 
   // Cập nhật localStorage và Navbar mỗi khi cart state thay đổi
   useEffect(() => {
@@ -60,7 +82,7 @@ export default function Cart() {
     }
 
     // Kiểm tra đăng nhập (Vì API Checkout của FastAPI yêu cầu token)
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
     if (!token) {
         alert("Vui lòng đăng nhập để thực hiện thanh toán!");
         navigate('/login');
@@ -70,6 +92,11 @@ export default function Cart() {
     setIsProcessing(true);
 
     try {
+        // Debug: Kiểm tra token và dữ liệu
+        console.log('Token:', token);
+        console.log('Form data:', formData);
+        console.log('Cart:', cart);
+        
         // Định dạng dữ liệu gửi lên FastAPI giống với Schema CheckoutRequest đã viết
         const orderPayload = {
             address: formData.address,
@@ -79,8 +106,12 @@ export default function Cart() {
                 quantity: item.quantity
             }))
         };
+        
+        console.log('Order payload:', orderPayload);
 
-        const response = await axiosClient.post('/store/checkout', orderPayload);
+        const response = await axiosClient.post('/api/store/checkout', orderPayload);
+        
+        console.log('Response:', response.data);
         
         if (response.data) {
             alert("Đặt hàng thành công! Hóa đơn đã được gửi qua email của bạn.");
@@ -89,6 +120,8 @@ export default function Cart() {
         }
     } catch (error) {
         console.error("Lỗi đặt hàng:", error);
+        console.error("Error response:", error.response);
+        console.error("Error data:", error.response?.data);
         alert(error.response?.data?.detail || "Có lỗi xảy ra khi kết nối server.");
     } finally {
         setIsProcessing(false);
@@ -182,12 +215,14 @@ export default function Cart() {
                 >
                   {isProcessing ? "Đang xử lý..." : "Xác nhận đặt hàng"}
                 </button>
+                {!isLoggedIn && (
                 <div className="mt-4 p-3 bg-light rounded text-center">
                   <p className="mb-2 text-muted small">Đăng nhập để lưu đơn hàng và nhận ưu đãi</p>
                   <Link to="/login" className="btn btn-outline-dark btn-sm rounded-pill px-4">
                     Đăng nhập ngay
                   </Link>
                 </div>
+              )}
               </form>
             </div>
           </div>

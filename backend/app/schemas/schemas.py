@@ -48,9 +48,15 @@ class UserCreate(UserBase):
     password: str
     role_id: Optional[UUID] = None 
 
+class RoleResponse(BaseModel):
+    id: UUID
+    name: str
+    model_config = ConfigDict(from_attributes=True)
+
 class UserResponse(UserBase):
     id: UUID
     avatar_image: Optional[str] = None
+    role: Optional[RoleResponse] = None
     model_config = ConfigDict(from_attributes=True)
 
 # ==========================================
@@ -92,7 +98,7 @@ class BillResponse(BaseModel):
     fullname: str
     address: str
     phone_number: str
-    payment_method: str
+    payment_method: Optional[str] = None
     details: List[BillDetailResponse] = []
     model_config = ConfigDict(from_attributes=True)
 
@@ -104,3 +110,4 @@ class DashboardStats(BaseModel):
     total_users: int
     total_orders: int
     total_revenue: float
+
