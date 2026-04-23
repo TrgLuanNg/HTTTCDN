@@ -216,9 +216,9 @@ export default function AdminUsers() {
                                     <label className="form-label">Vai trò (Role)</label>
                                     <select className="form-select" value={newUser.role_id} onChange={e => setNewUser({...newUser, role_id: e.target.value})}>
                                         <option value="">Chọn vai trò</option>
-                                        {roles.map(role => (
+                                        {roles.filter(role => role.name === 'user' || role.name === 'admin').map(role => (
                                             <option key={role.id} value={role.id}>
-                                                {role.name}
+                                                {role.name === 'admin' ? 'Admin' : 'User'}
                                             </option>
                                         ))}
                                     </select>

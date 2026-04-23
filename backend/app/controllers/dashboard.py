@@ -20,6 +20,13 @@ from app.schemas import schemas
 router = APIRouter(prefix="/api/admin", tags=["Dashboard"])
 
 # ==========================================
+# 0. API ROLES (Cho dropdown vai trò)
+# ==========================================
+@router.get("/roles")
+def get_all_roles(current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    return db.query(Role).all()
+
+# ==========================================
 # 1. API THỐNG KÊ (Cho trang chủ Admin)
 # ==========================================
 @router.get("/stats")
